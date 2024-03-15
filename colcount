@@ -2,7 +2,7 @@
 use 5.014 ; use warnings ; 
 use Time::HiRes qw [ gettimeofday tv_interval ] ;
 my ${ dt_start } = [ gettimeofday ] ; 
-use Getopt::Std ; getopts '@:2:e:' , \my %o  ; 
+use Getopt::Std ; getopts '=@:2:c:e:' , \my %o  ; 
 use Term::ANSIColor qw[ color :constants ] ; $Term::ANSIColor::AUTORESET = 1 ;
 use FindBin qw[ $Script ] ; 
 
@@ -21,11 +21,19 @@ $SIG{ALRM} = sub {
 } ; 
 alarm $o{'@'} ;
 
+do { $_ = <> ; chomp ; say $_ } if defined $o{c} && $o{'='} ; 
+
+
 while( <> ) { 
   chomp ; 
   my @F = split /$o{i}/ , $_ , -1 ; 
   @F = grep { m/$o{e}/ } @F if defined $o{e} ; 
-  say scalar @F ;
+  if ( ! defined $o{c} ) { 
+    say scalar @F ;
+  }
+  else {
+    say $_ if scalar @F == $o{c} ;
+  }
 }
 
 exit ;
@@ -71,12 +79,16 @@ sub HELP_MESSAGE {
 オプションに関して :
 
   -e STR : 正規表現で、マッチする列数を指定するようにする。^(\-|)$ により、各セルの値が"-"または空文字列であるものを数えるように指定できる。
+  -c N   : 各行において、-e で指定した正規表現にマッチする列について、-c で指定された数 N に一致する場合に、その入力行を出力する。
+  -=     : -c が指定されているときに、-= が指定されたら、入力行の1行目は無条件に最初に出力する(変数名の並びであるなど重要なことがあるため)。
 
   -i STR : 入力の区切り文字の指定。未指定なら、タブ文字を指定したものと見なされる。
+
   -2 0   : 最後に標準エラー出力に出力される二次情報を、出力しない。
   -@  N  : N秒ごとに、何行読んだか等の情報を標準エラー出力に出力する。未指定だと15。
   --help : このオンラインヘルプの文面を表示する。
 
 その他 : 
+  *  -c の指定において、1個の数だけでは無くて、複数の数や数範囲を指定できるようにしたい。
 
 =cut
