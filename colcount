@@ -2,7 +2,7 @@
 use 5.014 ; use warnings ; 
 use Time::HiRes qw [ gettimeofday tv_interval ] ;
 my ${ dt_start } = [ gettimeofday ] ; 
-use Getopt::Std ; getopts '=@:2:c:e:' , \my %o  ; 
+use Getopt::Std ; getopts '=@:2:c:e:A' , \my %o  ; 
 use Term::ANSIColor qw[ color :constants ] ; $Term::ANSIColor::AUTORESET = 1 ;
 use FindBin qw[ $Script ] ; 
 
@@ -25,11 +25,12 @@ do { $_ = <> ; chomp ; say $_ } if defined $o{c} && $o{'='} ;
 
 
 while( <> ) { 
+  $readLines ++ ;
   chomp ; 
   my @F = split /$o{i}/ , $_ , -1 ; 
   @F = grep { m/$o{e}/ } @F if defined $o{e} ; 
   if ( ! defined $o{c} ) { 
-    say scalar @F ;
+    say $o{A} ? "$_$o{i}" . scalar @F : scalar @F ;
   }
   else {
     say $_ if scalar @F == $o{c} ;
@@ -83,12 +84,13 @@ sub HELP_MESSAGE {
   -=     : -c が指定されているときに、-= が指定されたら、入力行の1行目は無条件に最初に出力する(変数名の並びであるなど重要なことがあるため)。
 
   -i STR : 入力の区切り文字の指定。未指定なら、タブ文字を指定したものと見なされる。
-
+  -A     : 入力の各行において 出力すべき「列数」を、元の入力のすぐ後ろに追加する。区切り文字は-i で指定したものになる。(-cとは両立しない)
   -2 0   : 最後に標準エラー出力に出力される二次情報を、出力しない。
   -@  N  : N秒ごとに、何行読んだか等の情報を標準エラー出力に出力する。未指定だと15。
   --help : このオンラインヘルプの文面を表示する。
 
 その他 : 
   *  -c の指定において、1個の数だけでは無くて、複数の数や数範囲を指定できるようにしたい。
+  *  -A の指定により、変数名の並びの行に対して、出力をファイルに保存した場合、1行目の最後の列を手書きで書き換える必要が発生してしまう。
 
 =cut
